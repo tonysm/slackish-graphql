@@ -104,6 +104,7 @@ return [
             ],
             'mutation' => [
                 'createWorkspace' => \App\GraphQL\Mutations\CreateWorkspaceMutation::class,
+                'createChannel' => \App\GraphQL\Mutations\CreateChannelMutation::class,
             ],
             'middleware' => [
                 'auth:api',
