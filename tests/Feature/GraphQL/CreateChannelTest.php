@@ -3,6 +3,7 @@
 namespace Tests\Feature\GraphQL;
 
 use App\User;
+use App\Workspace;
 use Tests\TestCase;
 use Illuminate\Http\Response;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -24,13 +25,13 @@ mutation channels($workspace_id: Int, $name: String) {
 }
 EOL;
 
-        return [
+        return array_replace_recursive([
             'query' => $mutation,
             'variables' => [
-                'name' => null,
+                'name' => $this->faker->word,
                 'workspace_id' => null,
             ],
-        ];
+        ], $overrides);
     }
 
     public function testMustBeAuthenticated()
@@ -57,6 +58,29 @@ EOL;
                 '*' => [
                     'validation' => [
                         'name',
+                        'workspace_id',
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testCannotCreateChannelsInWorkspacesTheUserDontBelong()
+    {
+        $user = factory(User:: class)->create();
+
+        $response = $this->actingAs($user, 'api')
+            ->postJson('/graphql', $this->validParams([
+                'variables' => [
+                    'workspace_id' => factory(Workspace::class)->create()->getKey(),
+                ],
+            ]));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'errors' => [
+                '*' => [
+                    'validation' => [
                         'workspace_id',
                     ],
                 ],

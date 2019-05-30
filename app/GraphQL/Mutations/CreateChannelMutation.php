@@ -3,6 +3,7 @@
 namespace App\GraphQL\Mutations;
 
 use GraphQL\Type\Definition\Type;
+use Illuminate\Validation\Rule;
 use Rebing\GraphQL\Support\Mutation;
 use Rebing\GraphQL\Support\Facades\GraphQL;
 
@@ -28,7 +29,12 @@ class CreateChannelMutation extends Mutation
             'workspace_id' => [
                 'name' => 'workspace_id',
                 'type' => Type::int(),
-                'rules' => ['required', 'number'],
+                'rules' => [
+                    'required',
+                    'numeric',
+                    Rule::exists('user_workspace', 'workspace_id')
+                        ->where('user_workspace.user_id', auth()->id()),
+                ],
             ],
         ];
     }
