@@ -90,5 +90,28 @@ EOL;
 
     public function testCanCreateChannel()
     {
+        $user = factory(User:: class)->create();
+        $workspace = factory(Workspace::class)->create();
+        $user->workspaces()->save($workspace, ['role' => 'member']);
+
+        $response = $this->actingAs($user, 'api')
+            ->postJson('/graphql', $this->validParams([
+                'variables' => [
+                    'workspace_id' => $workspace->getKey(),
+                ],
+            ]));
+
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'data' => [
+                'createChannel' => [
+                    'id',
+                    'name',
+                ],
+            ],
+        ]);
+
+        $workspace->refresh();
+        $this->assertCount(1, $workspace->channels);
     }
 }

@@ -41,5 +41,13 @@ class CreateChannelMutation extends Mutation
 
     public function resolve($root, $args)
     {
+        /** @var \App\Workspace $workspace */
+        $workspace = auth()->user()->workspaces()->find($args['workspace_id']);
+
+        if (! $workspace) {
+            return null;
+        }
+
+        return $workspace->createChannel($args['name']);
     }
 }
